@@ -1,4 +1,4 @@
-package com.mad.covo_challenge;
+package com.springboot.controller;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -8,47 +8,55 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 
 
 public class CityRepository {
 	
-	private static final String FILE_PATH = "/Users/mad/eclipse-workspace-2018-12/covo-challenge/src/main/java/com/mad/covo_challenge/cities_canada-usa.tsv";
-	private static final String FILE_PATH_GITHUB = "https://raw.githubusercontent.com/duchesnema/backend-coding-challenge/master/data/cities_canada-usa.tsv";
-	
-	private static final double COEFF_SCORE_CITY_ONLY = 0.8;
-	private static final double WEIGHT_SCORE_CITY_NAME_MATCHES = 0.25;
-	private static final double WEIGHT_SCORE_CITY_LAT_LONG = 0.75;
-	private static final double COEFF_SCORE_CITY = 0.9;
+	private static final String FILE_PATH_GITHUB 				= "https://raw.githubusercontent.com/duchesnema/backend-coding-challenge/master/data/cities_canada-usa.tsv";
+	private static final double COEFF_SCORE_CITY_ONLY 			= 0.8;
+	private static final double WEIGHT_SCORE_CITY_NAME_MATCHES 	= 0.25;
+	private static final double WEIGHT_SCORE_CITY_LAT_LONG 		= 0.75;
+	private static final double COEFF_SCORE_CITY 				= 0.9;
+	private static final boolean USE_PERCENTAGE_SEARCH 			= true;
 	
 	private ArrayList<City> cities = new ArrayList<City>();
-	String toto = "https://raw.githubusercontent.com/Crunchify/All-in-One-Webmaster/master/all-in-one-webmaster-premium.php";
+	private String cityToSearch;
+	private double latitude;
+	private double longitude;
+	private Search citySearch;
 	
-	
-	
-	public CityRepository() {
+	public CityRepository(String cityToSearch, double latitude, double longitude) {
+		this.cityToSearch 	= cityToSearch;
+		this.latitude 		= latitude;
+		this.longitude 		= longitude;
+		
 		try {
 			readCityList(cities); //Read cities from the file
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		if (USE_PERCENTAGE_SEARCH) {
+			citySearch = new CitySearchPercentageCloseness();
+		}else {
+			citySearch = new CitySearchFirstLetterMatch();	
+		}
 	}
 
-	public ArrayList<City> citySearch(String cityToSearch, double latitude, double longtitude) {
-		ArrayList<City> potentialCityList = new ArrayList<City>();
-
-		//Search in all cities and if city to search matches the name of a city and this city start with same letter 
-		//this is to avoid London and New London, for alphabetical search. Then build a potential city list to return
-		for(City c : cities) {
-			if (c.returnCityNameOnly().contains(cityToSearch)){
-				if ( (c.returnCityNameOnly().charAt(0) == cityToSearch.charAt(0)) && (c.returnCityNameOnly().contains(cityToSearch)) ) {
-					potentialCityList.add(c); 
-				}
-			}
-		}
+	public ArrayList<City> getSuggestions(){
+		ArrayList<City> newCityList = citySearch();
 		
-		giveScoreToCities(potentialCityList,cityToSearch,latitude,longtitude); //Give a score to best matching city
+		newCityList = giveScoreToCities(newCityList, cityToSearch, latitude, longitude);
 		
-		return potentialCityList;
+		Collections.sort(newCityList, new CityCompareScore()); //Sort by score
+		
+		return newCityList;
+				
+	}
+	
+	private ArrayList<City> citySearch() {
+		return citySearch.search(cities,cityToSearch);
 	}
 	
 	private ArrayList<City> giveScoreToCities(ArrayList<City> potentialCityList, String cityToSearch, double latitude, double longitude){
@@ -86,10 +94,10 @@ public class CityRepository {
 
 	private void setScoreWithNameMatch(ArrayList<City> potentialCityList, String cityToSearch) {
 		for (int i = 0; i < potentialCityList.size(); i++) {
-			if (potentialCityList.get(i).returnCityNameOnly().length() == cityToSearch.length()) { //getName returns a string with name, province/state, country. Split to get only the name
+			if (potentialCityList.get(i).getCityNameOnly().length() == cityToSearch.length()) {
 				potentialCityList.get(i).setScore(1.0);
 			}else {
-				int howManyLettersMore = potentialCityList.get(i).returnCityNameOnly().length() - cityToSearch.length();
+				int howManyLettersMore = potentialCityList.get(i).getCityNameOnly().length() - cityToSearch.length();
 				potentialCityList.get(i).setScore(MathUtils.round(Math.pow(COEFF_SCORE_CITY_ONLY,howManyLettersMore),2));
 			}
 		}		
@@ -106,7 +114,6 @@ public class CityRepository {
 				InputStream inputStream = githubHttp.getInputStream();
 				reader = new BufferedReader(new InputStreamReader(inputStream));
 			}
-			//reader = new BufferedReader(new FileReader(FILE_PATH));
 			
 			String line = reader.readLine(); // Read first line.
 			int lineCnt 	= 1;
@@ -161,7 +168,9 @@ public class CityRepository {
 		} catch (FileNotFoundException e) {
 			System.out.println("There was a problem reading city file : " + e);
 			e.printStackTrace();
-		}		
+		}	
+		
+		Collections.sort(cities, new CityCompareName());
 	}
 	
 	private String getCanadianProvinceAbvr(String str) {

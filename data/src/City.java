@@ -1,10 +1,9 @@
-package com.mad.covo_challenge;
+package com.springboot.controller;
 
 import java.util.Comparator;
 
-import javax.json.bind.annotation.JsonbPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@JsonbPropertyOrder({"name","latitude","longitude","score"})
 public class City{
 	private String cityName;
 	private String name;
@@ -44,9 +43,8 @@ public class City{
 		this.score = score;
 	}
 	
-	//hack : JAX-RS call this if it's named with a get prefix like getCityNameOnly. renamed to returnCity.. 
-	//Proper way would be to find how jersey hide methods or switch to jackson that seems to have this capability. Jersey doesn't seem obvious. To fix later.
-	public String returnCityNameOnly(){ 
+	@JsonIgnore
+	public String getCityNameOnly(){ 
 		return cityName;
 	}
 	
@@ -64,6 +62,13 @@ class CityCompareScore implements Comparator<City>{
 		}else {
 			return -1;
 		}
+	}
+}
+
+//Sort by alphabetic order
+class CityCompareName implements Comparator<City>{
+	public int compare(City c1, City c2) {
+		return c1.getName().compareTo(c2.getName());
 	}
 }
 

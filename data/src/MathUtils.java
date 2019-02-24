@@ -1,4 +1,4 @@
-package com.mad.covo_challenge;
+package com.springboot.controller;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

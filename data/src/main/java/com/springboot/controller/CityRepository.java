@@ -13,7 +13,7 @@ import java.util.Collections;
 
 public class CityRepository {
 	
-	private static final String FILE_PATH_GITHUB 				= "https://raw.githubusercontent.com/duchesnema/backend-coding-challenge/master/data/cities_canada-usa.tsv";
+	private static final String FILE_PATH_GITHUB 				= "https://raw.githubusercontent.com/duchesnema/backend-coding-challenge/master/data/src/main/java/com/springboot/controller/cities_canada-usa.tsv";
 	private static final double COEFF_SCORE_CITY_ONLY 			= 0.8;
 	private static final double WEIGHT_SCORE_CITY_NAME_MATCHES 	= 0.25;
 	private static final double WEIGHT_SCORE_CITY_LAT_LONG 		= 0.75;

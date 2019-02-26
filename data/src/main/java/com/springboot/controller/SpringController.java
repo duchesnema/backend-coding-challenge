@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SpringController {
 	
 	@GetMapping("")
-	public com.springboot.controller.Cities getCityWithParam(@RequestParam("q") String q, @RequestParam("latitude") double latitude, @RequestParam("longitude") double longitude ) {
+	public Cities getCityWithParam(@RequestParam("q") String q, @RequestParam("latitude") double latitude, @RequestParam("longitude") double longitude ) {
 		Cities suggestedCitiesList = new Cities(q,latitude,longitude);
 		return suggestedCitiesList;
 		

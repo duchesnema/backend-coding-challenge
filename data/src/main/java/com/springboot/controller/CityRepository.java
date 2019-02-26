@@ -18,7 +18,15 @@ public class CityRepository {
 	private static final double WEIGHT_SCORE_CITY_NAME_MATCHES 	= 0.25;
 	private static final double WEIGHT_SCORE_CITY_LAT_LONG 		= 0.75;
 	private static final double COEFF_SCORE_CITY 				= 0.9;
-	private static final boolean USE_PERCENTAGE_SEARCH 			= true;
+	private static final String SEARCH_ALGO_TO_USE				= "FUZZY";
+	
+	private enum SearchAlgo { 
+		FIRST_LETTER_MATCH,
+	    PERCENTAGE_CLOSENESS,
+	    KMP,
+	    FUZZY
+	}
+	
 	
 	private ArrayList<City> cities = new ArrayList<City>();
 	private String cityToSearch;
@@ -37,11 +45,24 @@ public class CityRepository {
 			e.printStackTrace();
 		}
 		
-		if (USE_PERCENTAGE_SEARCH) {
-			citySearch = new CitySearchPercentageCloseness();
-		}else {
-			citySearch = new CitySearchFirstLetterMatch();	
-		}
+		SearchAlgo whichAlgo = SearchAlgo.valueOf(SEARCH_ALGO_TO_USE);
+	
+		switch(whichAlgo){
+			case FIRST_LETTER_MATCH:
+				citySearch = new CitySearchFirstLetterMatch();	
+				break;
+			case PERCENTAGE_CLOSENESS:
+				citySearch = new CitySearchPercentageCloseness();
+				break;
+			case KMP:
+				citySearch = new CitySearchKMP();
+				break;
+			case FUZZY:
+				citySearch = new CitySearchFuzzy();
+			default:
+				break;
+				
+		}	
 	}
 
 	public ArrayList<City> getSuggestions(){

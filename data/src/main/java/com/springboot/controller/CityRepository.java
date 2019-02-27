@@ -18,7 +18,7 @@ public class CityRepository {
 	private static final double WEIGHT_SCORE_CITY_NAME_MATCHES 	= 0.25;
 	private static final double WEIGHT_SCORE_CITY_LAT_LONG 		= 0.75;
 	private static final double COEFF_SCORE_CITY 				= 0.9;
-	private static final String SEARCH_ALGO_TO_USE				= "FUZZY";
+	private static final String SEARCH_ALGO_TO_USE				= "PERCENTAGE_CLOSENESS";
 	
 	private enum SearchAlgo { 
 		FIRST_LETTER_MATCH,
